@@ -1,5 +1,7 @@
 # 🛠️ IT Helpdesk Analytics — Data Pipeline & Dashboard
 
+### ▶️ [**Live demo — try the interactive dashboard**](https://it-appdesk-analytics.streamlit.app/)
+
 An end-to-end **data-engineering + analytics** project: a Python ETL pipeline
 that generates realistic IT support-ticket data, cleans and validates it with
 **pandas**, models it in a **SQLite star schema**, and serves it through an
