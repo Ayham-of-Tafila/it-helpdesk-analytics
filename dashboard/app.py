@@ -22,8 +22,14 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
-# Make the sibling `queries` module importable when run via `streamlit run`.
-sys.path.append(str(Path(__file__).resolve().parent))
+# Make the sibling `queries` module and the project root (for the `etl`
+# package) importable, whether run locally via `streamlit run` or on a fresh
+# deploy such as Streamlit Community Cloud.
+_DASHBOARD_DIR = Path(__file__).resolve().parent
+_PROJECT_ROOT = _DASHBOARD_DIR.parent
+for _p in (_DASHBOARD_DIR, _PROJECT_ROOT):
+    if str(_p) not in sys.path:
+        sys.path.append(str(_p))
 import queries  # noqa: E402
 
 # --- Page config -----------------------------------------------------------
@@ -52,14 +58,24 @@ def kpi_card(label: str, value: str, help_text: str = "") -> None:
     st.metric(label, value, help=help_text)
 
 
-def main() -> None:
-    # --- Guard: has the pipeline been run? --------------------------------
+@st.cache_resource(show_spinner="Building the demo database (first run only)…")
+def ensure_database() -> None:
+    """Build the SQLite warehouse on first launch if it isn't present yet.
+
+    On a fresh deploy (e.g. Streamlit Community Cloud) the gitignored database
+    doesn't exist, so we run the ETL pipeline once to generate it (~8k synthetic
+    tickets, <1s). Cached as a resource so it runs a single time per server
+    rather than on every script rerun.
+    """
     if not queries.database_exists():
-        st.error(
-            "No database found. Run the ETL pipeline first:\n\n"
-            "```\npython run_pipeline.py\n```"
-        )
-        st.stop()
+        from etl.run import run_pipeline
+
+        run_pipeline(regenerate=True)
+
+
+def main() -> None:
+    # Build the warehouse on first run; a no-op once it already exists.
+    ensure_database()
 
     df = get_data()
 
