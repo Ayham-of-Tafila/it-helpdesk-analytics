@@ -1,0 +1,10 @@
+# Core ETL + analytics stack
+pandas>=2.1
+numpy>=1.26
+
+# Interactive dashboard
+streamlit>=1.30
+plotly>=5.18
+
+# Testing
+pytest>=8.0
